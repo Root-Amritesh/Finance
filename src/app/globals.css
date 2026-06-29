@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root {
+  --bg-base: #07070F;
+  --bg-surface: #0D0D1A;
+  --accent-neon: #39FF14;
+  --accent-cyan: #00F0FF;
+}
+body { background-color: var(--bg-base); color: #E8EAF0; margin: 0; }
