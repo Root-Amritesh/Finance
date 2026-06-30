@@ -1,10 +1,325 @@
+/*
+ * PAYLOAD FINANCE — Global Stylesheet
+ * Design System: Cybercore × Aurora Fusion
+ *
+ * Google Fonts are loaded via next/font/google in layout.tsx for
+ * performance (automatic self-hosting, no layout shift).
+ * CSS variables --font-inter and --font-jetbrains-mono are
+ * injected by Next.js onto the <html> element via className.
+ *
+ * Fallback reference (not active):
+ * @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════════════════════ */
 :root {
-  --bg-base: #07070F;
-  --bg-surface: #0D0D1A;
-  --accent-neon: #39FF14;
-  --accent-cyan: #00F0FF;
+  /* Backgrounds */
+  --bg-base:        #07070F;
+  --bg-surface:     #0D0D1A;
+
+  /* Glass */
+  --glass:          rgba(255, 255, 255, 0.03);
+  --glass-border:   rgba(255, 255, 255, 0.07);
+
+  /* Accent Palette */
+  --accent-neon:    #39FF14;
+  --accent-cyan:    #00F0FF;
+  --accent-purple:  #BF5AF2;
+  --accent-amber:   #FFB800;
+  --accent-red:     #FF3B5C;
+
+  /* Typography */
+  --text-primary:   #E8EAF0;
+  --text-muted:     #4A5568;
+  --text-dim:       #2D3748;
+
+  /* Aurora Colours */
+  --aurora-purple:  rgba(107, 33, 168, 0.18);
+  --aurora-teal:    rgba(13, 148, 136, 0.14);
+  --aurora-blue:    rgba(29, 78, 216, 0.12);
 }
-body { background-color: var(--bg-base); color: #E8EAF0; margin: 0; }
+
+/* ═══════════════════════════════════════════════════════════════
+   BASE RESET
+═══════════════════════════════════════════════════════════════ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-inter, 'Inter', system-ui, sans-serif);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AURORA BACKGROUND — LAYER 2  (position: fixed, z-index: 0)
+═══════════════════════════════════════════════════════════════ */
+
+/* Blob 1 — top-right, purple, 600px, 14s */
+.aurora-blob-1 {
+  position: fixed;
+  top: -200px;
+  right: -200px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--aurora-purple) 0%, transparent 60%);
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+  will-change: transform;
+  animation: aurora-drift-1 14s ease-in-out infinite;
+}
+
+/* Blob 2 — bottom-left, teal, 500px, 17s */
+.aurora-blob-2 {
+  position: fixed;
+  bottom: -200px;
+  left: -200px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--aurora-teal) 0%, transparent 60%);
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+  will-change: transform;
+  animation: aurora-drift-2 17s ease-in-out infinite;
+}
+
+/* Blob 3 — center, blue, 400px, 20s */
+.aurora-blob-3 {
+  position: fixed;
+  top: 40%;
+  left: 30%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, var(--aurora-blue) 0%, transparent 60%);
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+  will-change: transform;
+  animation: aurora-drift-3 20s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AURORA KEYFRAMES — distinct translate paths per blob
+═══════════════════════════════════════════════════════════════ */
+@keyframes aurora-drift-1 {
+  0%, 100% { transform: translate(0px, 0px);    }
+  20%      { transform: translate(20px, -25px); }
+  40%      { transform: translate(-12px, 30px); }
+  60%      { transform: translate(18px, -10px); }
+  80%      { transform: translate(-8px, 22px);  }
+}
+
+@keyframes aurora-drift-2 {
+  0%, 100% { transform: translate(0px, 0px);    }
+  25%      { transform: translate(-20px, 18px); }
+  50%      { transform: translate(14px, -30px); }
+  75%      { transform: translate(-10px, 24px); }
+}
+
+@keyframes aurora-drift-3 {
+  0%, 100% { transform: translate(0px, 0px);    }
+  33%      { transform: translate(22px, 14px);  }
+  66%      { transform: translate(-18px, -26px);}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GRID OVERLAY — LAYER 3  (z-index: 0)
+═══════════════════════════════════════════════════════════════ */
+.grid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCANLINES — LAYER 4  (z-index: 0)
+═══════════════════════════════════════════════════════════════ */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.03) 0px,
+    rgba(0, 0, 0, 0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLASSMORPHISM CARD
+═══════════════════════════════════════════════════════════════ */
+.glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  transition: border-color 300ms ease, box-shadow 300ms ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(0, 240, 255, 0.20);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NEON TEXT EFFECTS
+═══════════════════════════════════════════════════════════════ */
+.neon-text {
+  color: var(--accent-neon);
+  text-shadow:
+    0 0 20px var(--accent-neon),
+    0 0 40px rgba(57, 255, 20, 0.30);
+}
+
+.cyan-text {
+  color: var(--accent-cyan);
+  text-shadow:
+    0 0 20px var(--accent-cyan),
+    0 0 40px rgba(0, 240, 255, 0.30);
+}
+
+.purple-text {
+  color: var(--accent-purple);
+  text-shadow:
+    0 0 20px var(--accent-purple),
+    0 0 40px rgba(191, 90, 242, 0.30);
+}
+
+.amber-text {
+  color: var(--accent-amber);
+  text-shadow:
+    0 0 20px var(--accent-amber),
+    0 0 40px rgba(255, 184, 0, 0.30);
+}
+
+.red-text {
+  color: var(--accent-red);
+  text-shadow:
+    0 0 20px var(--accent-red),
+    0 0 40px rgba(255, 59, 92, 0.30);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ADDITIONAL KEYFRAMES
+═══════════════════════════════════════════════════════════════ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes neon-pulse {
+  0%, 100% {
+    text-shadow:
+      0 0 10px var(--accent-neon),
+      0 0 20px rgba(57, 255, 20, 0.20);
+  }
+  50% {
+    text-shadow:
+      0 0 20px var(--accent-neon),
+      0 0 40px rgba(57, 255, 20, 0.40),
+      0 0 60px rgba(57, 255, 20, 0.15);
+  }
+}
+
+@keyframes stagger-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.35);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 240, 255, 0.65);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 240, 255, 0.35) transparent;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SELECTION
+═══════════════════════════════════════════════════════════════ */
+::selection {
+  background: rgba(0, 240, 255, 0.20);
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FOCUS VISIBLE — keyboard accessibility
+═══════════════════════════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REDUCED MOTION — respect user preference
+═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob-1,
+  .aurora-blob-2,
+  .aurora-blob-3 {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
