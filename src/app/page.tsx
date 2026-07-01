@@ -1,111 +1,169 @@
-'use client'
+'use client';
 
-import { StatCard }    from '@/components/ui/StatCard'
-import { ProgressBar } from '@/components/ui/ProgressBar'
-import { Badge }       from '@/components/ui/Badge'
-import { GlowButton }  from '@/components/ui/GlowButton'
-import { Card }        from '@/components/ui/Card'
+import { motion }                from 'framer-motion';
+import { AlertTriangle, Banknote, CalendarClock, CheckCircle2, Clock, ShieldCheck, Wallet } from 'lucide-react';
+import { AlertCard }             from '@/components/dashboard/AlertCard';
+import { BudgetGauge }           from '@/components/dashboard/BudgetGauge';
+import { CertProgressWidget }    from '@/components/dashboard/CertProgressWidget';
+import { LaptopGoalWidget }      from '@/components/dashboard/LaptopGoalWidget';
+import { MonthlyBurnWidget }     from '@/components/dashboard/MonthlyBurnWidget';
+import { StatCard, type StatGlowColor } from '@/components/dashboard/StatCard';
+import { GlassCard }             from '@/components/ui/GlassCard';
+import { ProgressBar }           from '@/components/ui/ProgressBar';
+import { useMounted }            from '@/hooks/useMounted';
 import {
-  IndianRupee,
-  Shield,
-  Target,
-  TrendingUp,
-} from 'lucide-react'
+  getBudgetRemaining,
+  getCertProgress,
+  getCurrentMonthSpent,
+  getCurrentPhase,
+  getMissionDays,
+} from '@/lib/calculations';
+import {
+  COLLEGE_CERTS,
+  FEE_MILESTONES,
+  MONTHLY_POCKET_MONEY,
+  THEME_HEX,
+  YEAR3_CERT_SPIKE_TOTAL,
+} from '@/lib/constants';
+import { formatINR, formatINRShort } from '@/lib/utils';
+import { useFinanceStore }       from '@/store/useFinanceStore';
 
-/**
- * Temporary scaffold page — replaced in Stage 3 with the real Dashboard.
- * Exercises every Stage 2 component so the design system can be
- * verified at a glance before the data layer is wired up.
- */
-export default function HomePage() {
+function budgetGlow(remaining: number): StatGlowColor {
+  if (remaining > 25_00_000)  return 'neon';
+  if (remaining >= 10_00_000) return 'amber';
+  return 'red';
+}
+
+export default function DashboardPage() {
+  const mounted      = useMounted();
+  const certStatuses = useFinanceStore((s) => s.certStatuses);
+  const expenses     = useFinanceStore((s) => s.expenses);
+
+  const phase          = getCurrentPhase();
+  const missionDays    = getMissionDays();
+  const budgetLeft     = getBudgetRemaining();
+
+  const certProgress = mounted
+    ? getCertProgress(certStatuses)
+    : { completed: 0, total: COLLEGE_CERTS.length, percentage: 0 };
+
+  const monthSpent   = mounted ? getCurrentMonthSpent(expenses) : 0;
+
+  const sem1 = FEE_MILESTONES.find((f) => f.id === 'sem1')!;
+  const sem2 = FEE_MILESTONES.find((f) => f.id === 'sem2')!;
+
   return (
-    <div className="space-y-8">
+    <div className="mx-auto flex w-full max-w-[1700px] flex-col gap-5 p-4 sm:gap-6 sm:p-6 lg:p-8">
 
-      {/* ── Header ──────────────────────────────────────────── */}
-      <div>
-        <p className="font-mono text-[10px] uppercase tracking-widest text-[#2D3748] mb-1">
-          Bennett University · B.Tech CSE (Cybersecurity)
-        </p>
-        <h1 className="font-mono text-2xl font-bold text-[#E8EAF0]">
-          Mission{' '}
-          <span className="neon-text">PAYLOAD</span>
-        </h1>
-        <p className="mt-1 font-mono text-xs text-[#4A5568]">
-          Aug 2026 → May 2030 · ₹39,80,000 ceiling
-        </p>
-      </div>
+      {/* ── MISSION HEADER ───────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, x: -24 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+      >
+        <GlassCard
+          className="relative overflow-hidden p-6 sm:p-8"
+          style={{
+            backgroundImage:
+              'linear-gradient(90deg, rgba(107,33,168,0.18) 0%, rgba(107,33,168,0.05) 45%, transparent 75%)',
+          }}
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="font-mono text-lg font-bold tracking-[0.08em] text-[var(--text-primary)] sm:text-2xl">
+                MISSION: CLOUD SECURITY ARCHITECT
+              </h1>
+              <p className="mt-2 text-xs text-[var(--text-muted)] sm:text-sm">
+                INDIA → GERMANY 2032 &nbsp;·&nbsp; Bennett University &nbsp;·&nbsp;
+                CSE Cybersecurity &nbsp;·&nbsp; 2026–2030
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2 self-start rounded-full border border-[var(--accent-cyan)] px-4 py-2">
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-[var(--accent-cyan)]"
+                style={{ boxShadow: '0 0 8px var(--accent-cyan)' }}
+              />
+              <span className="font-mono text-xs font-semibold tracking-wide text-[var(--accent-cyan)]">
+                {phase.code} · {phase.name}
+              </span>
+            </div>
+          </div>
+        </GlassCard>
+      </motion.div>
 
-      {/* ── Stat Cards ──────────────────────────────────────── */}
+      {/* ── 4 STAT CARDS ──────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
-          label="Total Budget"
-          value="₹39.80L"
-          subValue="4-year ceiling"
-          icon={IndianRupee}
-          glowColor="neon"
-          delay={0.1}
+          label="Budget Remaining"
+          value={formatINRShort(budgetLeft)}
+          sub="of ₹39.8L ceiling"
+          icon={Wallet}
+          glowColor={budgetGlow(budgetLeft)}
+          delay={0.05}
         />
         <StatCard
-          label="Sem 1 Paid"
-          value="₹4.08L"
-          subValue="3 receipts ✓"
-          icon={TrendingUp}
-          glowColor="cyan"
-          trend="up"
-          delay={0.2}
-        />
-        <StatCard
-          label="Cyber Budget"
-          value="₹4.86L"
-          subValue="9 certs + platforms"
-          icon={Shield}
+          label="Certs Unlocked"
+          value={`${certProgress.completed} / ${certProgress.total}`}
+          icon={ShieldCheck}
           glowColor="purple"
-          delay={0.3}
+          delay={0.1}
+        >
+          <ProgressBar value={certProgress.percentage} color={THEME_HEX.purple} className="mt-1" />
+        </StatCard>
+        <StatCard
+          label="Monthly Budget"
+          value={`${formatINR(MONTHLY_POCKET_MONEY)} / mo`}
+          sub={mounted ? `${formatINR(monthSpent)} spent this month` : 'Syncing…'}
+          icon={Banknote}
+          glowColor="cyan"
+          delay={0.15}
         />
         <StatCard
-          label="Laptop Goal"
-          value="₹2.50L"
-          subValue="Saving separately"
-          icon={Target}
+          label="Mission Days Left"
+          value={missionDays.remaining.toLocaleString('en-IN')}
+          sub="days until May 2030"
+          icon={CalendarClock}
           glowColor="amber"
-          delay={0.4}
+          delay={0.2}
         />
       </div>
 
-      {/* ── Progress Bars ───────────────────────────────────── */}
-      <Card title="Budget Utilisation" subtitle="₹39,80,000 total ceiling" glowColor="cyan">
-        <div className="space-y-4">
-          <ProgressBar label="Sem 1 Paid"       value={10.2}  color="neon"   showLabel />
-          <ProgressBar label="Committed Total"  value={78.3}  color="cyan"   showLabel />
-          <ProgressBar label="Cyber Budget"     value={12.2}  color="purple" showLabel />
-          <ProgressBar label="Laptop A Goal"    value={0}     color="amber"  showLabel />
-        </div>
-      </Card>
+      {/* ── BUDGET GAUGE (60%) + CERT TRACK (40%) ────────── */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+        <div className="lg:col-span-3"><BudgetGauge /></div>
+        <div className="lg:col-span-2"><CertProgressWidget /></div>
+      </div>
 
-      {/* ── Badges + Button Demo ─────────────────────────────── */}
-      <Card title="Certification Status — Sem 1" glowColor="purple">
-        <div className="flex flex-wrap gap-2 mb-4">
-          <Badge variant="neon">AZ-900 · Queued</Badge>
-          <Badge variant="cyan">CLF-C02 · Sem 1</Badge>
-          <Badge variant="purple">Security+ · Sem 2</Badge>
-          <Badge variant="amber">₹9,440</Badge>
-          <Badge variant="dim">DECORATION</Badge>
-        </div>
-        <div className="flex flex-wrap gap-3 mt-5">
-          <GlowButton variant="cyan"   size="sm">Mark Passed</GlowButton>
-          <GlowButton variant="purple" size="sm">View Roadmap</GlowButton>
-          <GlowButton variant="neon"   size="sm" disabled>Log Expense</GlowButton>
-        </div>
-      </Card>
+      {/* ── MONTHLY BURN (50%) + LAPTOP GOALS (50%) ──────── */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <MonthlyBurnWidget />
+        <LaptopGoalWidget />
+      </div>
 
-      {/* ── Stage Notice ────────────────────────────────────── */}
-      <Card glowColor="amber">
-        <p className="font-mono text-[11px] text-[#FFB800]">
-          ⚡ STAGE 2 COMPLETE — Design system verified. Dashboard data
-          layer and all 6 pages build in Stage 3+.
-        </p>
-      </Card>
+      {/* ── 3-COLUMN ALERT ROW ───────────────────────────── */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <AlertCard
+          icon={CheckCircle2}
+          tone="neon"
+          title="SEM 1 CLEARED ✓"
+          subtitle={`${formatINR(sem1.amount)} · ${sem1.dueDateLabel}`}
+        />
+        <AlertCard
+          icon={Clock}
+          tone="amber"
+          pulse
+          title="NEXT: SEMESTER 2"
+          subtitle={`${formatINR(sem2.amount)} · ${sem2.dueDateLabel}`}
+        />
+        <AlertCard
+          icon={AlertTriangle}
+          tone="red"
+          pulse
+          title="YEAR 3 ALERT"
+          subtitle={`GCP+SCS+CKA+CKS = ${formatINR(YEAR3_CERT_SPIKE_TOTAL)} in Sems 5–6`}
+        />
+      </div>
 
     </div>
-  )
+  );
 }

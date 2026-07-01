@@ -1,151 +1,84 @@
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-import { differenceInDays } from 'date-fns'
-import { MISSION_START, MISSION_END, TOTAL_BUDGET, SEM1 } from './constants'
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { differenceInCalendarDays } from 'date-fns';
+import {
+  BUDGET_CEILING,
+  GRADUATION_DATE,
+  MISSION_START_DATE,
+  TOTAL_COMMITTED,
+} from './constants';
 
-// ═══════════════════════════════════════════════════════════════
-// TAILWIND CLASS MERGE UTILITY
-// ═══════════════════════════════════════════════════════════════
+// ── TAILWIND MERGE ───────────────────────────────────────────────────
 export function cn(...inputs: ClassValue[]): string {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
-// ═══════════════════════════════════════════════════════════════
-// INDIAN NUMBER FORMATTING
-// ═══════════════════════════════════════════════════════════════
-
+// ── INDIAN NUMBER FORMATTING ──────────────────────────────────────────
 /**
- * Formats a whole-rupee integer using Indian number system.
- * e.g. 3980000 → ₹39,80,000
- * e.g. 407500  → ₹4,07,500
- * e.g. -38000  → -₹38,000
+ * Full Indian-grouped rupee string.
+ * e.g. 100000 → "₹1,00,000"
  */
 export function formatINR(amount: number): string {
-  const isNegative = amount < 0
-  const absAmount  = Math.abs(Math.round(amount))
-  const str        = absAmount.toString()
-
-  let formatted: string
-  if (str.length <= 3) {
-    formatted = str
-  } else {
-    const lastThree = str.slice(-3)
-    let remaining   = str.slice(0, -3)
-    const groups: string[] = []
-
-    while (remaining.length > 0) {
-      groups.unshift(remaining.slice(-2))
-      remaining = remaining.slice(0, -2)
-    }
-
-    formatted = groups.filter(Boolean).join(',') + ',' + lastThree
-  }
-
-  return (isNegative ? '-₹' : '₹') + formatted
+  const rounded = Math.round(amount);
+  const sign    = rounded < 0 ? '-' : '';
+  return `${sign}₹${Math.abs(rounded).toLocaleString('en-IN')}`;
 }
 
 /**
- * Short format for compact display (TopBar, pills).
- * e.g. 3572500  → ₹35.73L
- * e.g. 25000    → ₹25.0K
- * e.g. 500      → ₹500
+ * Short form for compact display.
+ * e.g. 3116614 → "₹31.2L" | 9440 → "₹9.4K"
  */
 export function formatINRShort(amount: number): string {
-  const abs = Math.abs(Math.round(amount))
-  const sign = amount < 0 ? '-' : ''
-
-  if (abs >= 1_00_00_000) {
-    return `${sign}₹${(abs / 1_00_00_000).toFixed(2)}Cr`
-  }
-  if (abs >= 1_00_000) {
-    return `${sign}₹${(abs / 1_00_000).toFixed(2)}L`
-  }
-  if (abs >= 1_000) {
-    return `${sign}₹${(abs / 1_000).toFixed(1)}K`
-  }
-  return `${sign}₹${abs}`
+  const sign = amount < 0 ? '-' : '';
+  const abs  = Math.abs(amount);
+  if (abs >= 1_00_00_000) return `${sign}₹${(abs / 1_00_00_000).toFixed(2)}Cr`;
+  if (abs >= 1_00_000)    return `${sign}₹${(abs / 1_00_000).toFixed(1)}L`;
+  if (abs >= 1_000)       return `${sign}₹${(abs / 1_000).toFixed(1)}K`;
+  return `${sign}₹${Math.round(abs)}`;
 }
 
-/**
- * Formats a percentage with one decimal place.
- * e.g. 78.23 → "78.2%"
- */
 export function formatPercent(value: number, decimals = 1): string {
-  return `${value.toFixed(decimals)}%`
+  return `${value.toFixed(decimals)}%`;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// MISSION TIMER
-// ═══════════════════════════════════════════════════════════════
+// ── BACKWARD COMPAT — used by TopBar.tsx from Stage 2 ────────────────
+// (Stage 3 dashboard uses src/lib/calculations.ts directly)
 
 export interface MissionDays {
-  elapsed:  number   // days since mission start (0 if not yet started)
-  total:    number   // total mission length in days
-  percent:  number   // 0-100, rounded to nearest integer
-  started:  boolean  // true if today >= MISSION_START
+  elapsed:  number;   // days since mission start (0 if not yet started)
+  total:    number;   // total mission length in days
+  percent:  number;   // 0–100
+  started:  boolean;
 }
 
-/**
- * Calculates elapsed/total days and completion percentage for the B.Tech mission.
- * Mission: 2026-08-01 → 2030-05-31
- */
 export function getMissionDays(): MissionDays {
-  const now   = new Date()
-  const total = differenceInDays(MISSION_END, MISSION_START)
-
-  const rawElapsed = differenceInDays(now, MISSION_START)
-  const started    = rawElapsed >= 0
-  const elapsed    = Math.max(0, Math.min(rawElapsed, total))
-  const percent    = Math.round((elapsed / total) * 100)
-
-  return { elapsed, total, percent, started }
+  const now   = new Date();
+  const start = new Date(MISSION_START_DATE);
+  const end   = new Date(GRADUATION_DATE);
+  const total = Math.max(1, differenceInCalendarDays(end, start));
+  const raw   = differenceInCalendarDays(now, start);
+  const started  = raw >= 0;
+  const elapsed  = Math.max(0, Math.min(raw, total));
+  const percent  = Math.round((elapsed / total) * 100);
+  return { elapsed, total, percent, started };
 }
 
-// ═══════════════════════════════════════════════════════════════
-// BUDGET UTILITIES
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * Returns the remaining ₹39.80L budget after confirmed payments.
- * Reads from Zustand store in pages; falls back to constants baseline here
- * so TopBar and server-side renders have a safe initial value.
- */
+/** How much of ₹39.80L ceiling hasn't been committed yet (headroom). */
 export function getBudgetRemaining(): number {
-  return TOTAL_BUDGET - SEM1.totalPaid
+  return BUDGET_CEILING - TOTAL_COMMITTED;
 }
 
-/**
- * Returns what percentage of the total budget has been spent.
- */
-export function getBudgetSpentPercent(spent: number): number {
-  return Math.min(100, Math.round((spent / TOTAL_BUDGET) * 100 * 10) / 10)
-}
-
-/**
- * Returns a colour key based on remaining budget thresholds.
- * Used for dynamic colouring in TopBar pill and dashboards.
- */
 export function getBudgetColour(remaining: number): 'neon' | 'amber' | 'red' {
-  if (remaining < 10_00_000)  return 'red'
-  if (remaining < 25_00_000)  return 'amber'
-  return 'neon'
+  if (remaining < 10_00_000)  return 'red';
+  if (remaining < 25_00_000)  return 'amber';
+  return 'neon';
 }
 
-// ═══════════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * Clamps a value between min and max.
- */
 export function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value))
+  return Math.min(max, Math.max(min, value));
 }
 
-/**
- * Returns a string like "AY2026-27" from a year index (1 = first year).
- */
 export function academicYear(yearIndex: number): string {
-  const start = 2025 + yearIndex
-  return `AY${start}-${String(start + 1).slice(-2)}`
+  const start = 2025 + yearIndex;
+  return `AY${start}-${String(start + 1).slice(-2)}`;
 }

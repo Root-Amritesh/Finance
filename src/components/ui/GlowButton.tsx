@@ -1,106 +1,41 @@
-'use client'
+'use client';
 
-import { motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
-import { tapScale } from '@/lib/motion'
+import { forwardRef, type ButtonHTMLAttributes } from 'react';
+import { cn } from '@/lib/utils';
 
-// ── Variant Config ────────────────────────────────────────────
-const VARIANT_STYLES = {
-  cyan: {
-    border:      '#00F0FF',
-    text:        '#00F0FF',
-    glowHover:   '0 0 15px rgba(0,240,255,0.35), 0 0 30px rgba(0,240,255,0.15)',
-    glowActive:  '0 0 8px  rgba(0,240,255,0.25)',
-  },
-  neon: {
-    border:      '#39FF14',
-    text:        '#39FF14',
-    glowHover:   '0 0 15px rgba(57,255,20,0.35), 0 0 30px rgba(57,255,20,0.15)',
-    glowActive:  '0 0 8px  rgba(57,255,20,0.25)',
-  },
-  purple: {
-    border:      '#BF5AF2',
-    text:        '#BF5AF2',
-    glowHover:   '0 0 15px rgba(191,90,242,0.35), 0 0 30px rgba(191,90,242,0.15)',
-    glowActive:  '0 0 8px  rgba(191,90,242,0.25)',
-  },
-} as const
+export type GlowButtonVariant = 'neon' | 'cyan' | 'purple' | 'amber' | 'red';
 
-// ── Size Config ───────────────────────────────────────────────
-const SIZE_STYLES = {
-  sm: 'px-3 py-1.5 text-[10px]',
-  md: 'px-5 py-2   text-xs',
-  lg: 'px-7 py-3   text-sm',
-} as const
-
-export type GlowButtonVariant = keyof typeof VARIANT_STYLES
-export type GlowButtonSize    = keyof typeof SIZE_STYLES
-
-// ── Types ─────────────────────────────────────────────────────
-export interface GlowButtonProps {
-  children:   React.ReactNode
-  onClick?:   () => void
-  variant?:   GlowButtonVariant
-  size?:      GlowButtonSize
-  disabled?:  boolean
-  type?:      'button' | 'submit' | 'reset'
-  className?: string
-  ariaLabel?: string
+export interface GlowButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: GlowButtonVariant;
+  size?:    'sm' | 'md';
 }
 
-// ── Component ─────────────────────────────────────────────────
-export function GlowButton({
-  children,
-  onClick,
-  variant   = 'cyan',
-  size      = 'md',
-  disabled  = false,
-  type      = 'button',
-  className,
-  ariaLabel,
-}: GlowButtonProps) {
-  const { border, text, glowHover, glowActive } = VARIANT_STYLES[variant]
+const VARIANT_STYLES: Record<GlowButtonVariant, string> = {
+  neon:   'border-[var(--accent-neon)]   text-[var(--accent-neon)]   hover:bg-[rgba(57,255,20,0.06)]  hover:shadow-[0_0_18px_rgba(57,255,20,0.35)]',
+  cyan:   'border-[var(--accent-cyan)]   text-[var(--accent-cyan)]   hover:bg-[rgba(0,240,255,0.06)]  hover:shadow-[0_0_18px_rgba(0,240,255,0.35)]',
+  purple: 'border-[var(--accent-purple)] text-[var(--accent-purple)] hover:bg-[rgba(191,90,242,0.06)] hover:shadow-[0_0_18px_rgba(191,90,242,0.35)]',
+  amber:  'border-[var(--accent-amber)]  text-[var(--accent-amber)]  hover:bg-[rgba(255,184,0,0.06)]  hover:shadow-[0_0_18px_rgba(255,184,0,0.35)]',
+  red:    'border-[var(--accent-red)]    text-[var(--accent-red)]    hover:bg-[rgba(255,59,92,0.06)]  hover:shadow-[0_0_18px_rgba(255,59,92,0.35)]',
+};
 
-  return (
-    <motion.button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      whileTap={!disabled ? tapScale : undefined}
-      whileHover={
-        !disabled
-          ? { boxShadow: glowHover, transition: { duration: 0.25 } }
-          : undefined
-      }
-      initial={{ boxShadow: glowActive }}
-      aria-label={ariaLabel}
+export const GlowButton = forwardRef<HTMLButtonElement, GlowButtonProps>(
+  ({ className, variant = 'cyan', size = 'md', children, ...props }, ref) => (
+    <button
+      ref={ref}
       className={cn(
-        // Layout
-        'inline-flex items-center justify-center gap-2',
-        // Shape
-        'rounded-lg border',
-        // Typography
-        'font-mono uppercase tracking-wider',
-        // No fill — border + text only
-        'bg-transparent',
-        // Transition for non-Motion properties
-        'transition-opacity duration-300',
-        // Size
-        SIZE_STYLES[size],
-        // Disabled state
-        disabled
-          ? 'cursor-not-allowed opacity-30'
-          : 'cursor-pointer',
-        className,
+        'inline-flex items-center justify-center gap-2 rounded-lg border bg-transparent',
+        'font-mono font-medium tracking-wide transition-all duration-300',
+        'disabled:cursor-not-allowed disabled:opacity-40',
+        size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm',
+        VARIANT_STYLES[variant],
+        className
       )}
-      style={{
-        borderColor: border,
-        color:       text,
-      }}
+      {...props}
     >
       {children}
-    </motion.button>
+    </button>
   )
-}
+);
 
-export default GlowButton
+GlowButton.displayName = 'GlowButton';
+export default GlowButton;

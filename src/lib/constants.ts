@@ -1,199 +1,166 @@
-/**
- * PAYLOAD FINANCE — Financial Ground Truth
- * All amounts in whole Indian Rupees (integers).
- * This file is the single source of truth — never deviate from these numbers.
- */
+import type { Certification, ExpenseCategory, FeeMilestone, MissionPhase } from '@/types';
 
-// ═══════════════════════════════════════════════════════════════
-// MISSION TIMELINE
-// ═══════════════════════════════════════════════════════════════
-export const MISSION_START = new Date('2026-08-01')
-export const MISSION_END   = new Date('2030-05-31')
+// ── CORE BUDGET FIGURES ───────────────────────────────────────────────
+export const BUDGET_CEILING         = 3_980_000;  // ₹39,80,000 — ALL expenses except laptops
+export const SEM1_TOTAL             = 407_500;    // confirmed cleared on BU portal
+export const TOTAL_REMAINING_FEES   = 1_906_000;  // Sem 2 + Year 2 + Year 3 + Year 4
 
-// ═══════════════════════════════════════════════════════════════
-// BUDGET CEILINGS
-// ═══════════════════════════════════════════════════════════════
-export const TOTAL_BUDGET  = 39_80_000   // ₹39,80,000 — ALL expenses except laptop
-export const LAPTOP_A_GOAL = 2_50_000   // ₹2,50,000  — College laptop (separate)
-export const LAPTOP_B_MIN  = 6_00_000   // ₹6,00,000  — Lab machine minimum
-export const LAPTOP_B_PLAN = 7_00_000   // ₹7,00,000  — Lab machine plan
-export const LAPTOP_B_MAX  = 8_00_000   // ₹8,00,000  — Lab machine max
+export const MONTHLY_POCKET_MONEY   = 6_000;      // ₹6,000/month fixed
+export const TOTAL_MISSION_MONTHS   = 48;
+export const MONTHLY_TOTAL          = MONTHLY_POCKET_MONEY * TOTAL_MISSION_MONTHS; // ₹2,88,000
 
-// ═══════════════════════════════════════════════════════════════
-// MONTHLY POCKET MONEY
-// ═══════════════════════════════════════════════════════════════
-export const MONTHLY_POCKET    = 6_000   // ₹6,000/month fixed
-export const POCKET_MONTHS     = 48      // 48 months total
-export const POCKET_TOTAL      = 2_88_000 // ₹2,88,000 (6000 × 48)
+// ── LAPTOPS — OUTSIDE THE ₹39.80L CEILING ───────────────────────────
+export const LAPTOP_COLLEGE_GOAL    = 250_000;    // ₹2,50,000 — separate savings goal
 
-// ═══════════════════════════════════════════════════════════════
-// SCHOLARSHIP — YEAR 1 ONLY
-// ═══════════════════════════════════════════════════════════════
-export const SCHOLARSHIP_TOTAL = 76_000   // ₹76,000 total
-export const SCHOLARSHIP_SEM1  = 38_000   // ₹38,000 Sem 1 (CONFIRMED PAID)
-export const SCHOLARSHIP_SEM2  = 38_000   // ₹38,000 Sem 2 (upcoming Jan 2027)
+export const LAPTOP_LAB = {
+  MIN:  600_000,  // ₹6L minimum
+  PLAN: 700_000,  // ₹7L target
+  MAX:  800_000,  // ₹8L stretch
+} as const;
 
-// ═══════════════════════════════════════════════════════════════
-// SEM 1 AY2026-27 — FULLY CLEARED
-// ═══════════════════════════════════════════════════════════════
-export const SEM1 = {
-  label:             'Sem 1 AY2026-27',
-  status:            'PAID' as const,
-  tuition:           1_90_000,
-  examination:       6_000,
-  coCurricular:      3_000,
-  alumni:            1_500,
-  securityDeposit:   30_000,   // REFUNDABLE at graduation May 2030
-  registrationFee:   45_000,
-  scholarship:      -38_000,
-  hostel:           1_70_000,  // ANNUAL charge paid upfront in Sem 1
-  payments: [
-    { ref: 'G44989', amount: 50_000,   date: '2026-04-18' },
-    { ref: 'G44990', amount: 1_00_000, date: '2026-04-18' },
-    { ref: 'G69500', amount: 2_57_500, date: '2026-06-24' },
-  ],
-  totalPaid:         4_07_500,
-  balance:           0,
-} as const
+// ── SCHOLARSHIP ───────────────────────────────────────────────────────
+export const SCHOLARSHIP_TOTAL      = 76_000;
+export const SCHOLARSHIP_PER_SEM    = 38_000;
 
-// ═══════════════════════════════════════════════════════════════
-// UPCOMING FEE SCHEDULE
-// ═══════════════════════════════════════════════════════════════
-export const UPCOMING_FEES = [
+// ── SEM 1 — FULLY CLEARED ────────────────────────────────────────────
+export const SEM1_LINE_ITEMS = [
+  { label: 'Tuition Fee',                     amount: 190_000 },
+  { label: 'Examination Charges',             amount: 6_000   },
+  { label: 'Co-Curricular Charges',           amount: 3_000   },
+  { label: 'Alumni Charges',                  amount: 1_500   },
+  { label: 'Security Deposit (refundable)',   amount: 30_000  },
+  { label: 'Registration Fee',                amount: 45_000  },
+  { label: 'Admission Scholarship',           amount: -38_000 },
+  { label: 'Hostel — Triple Sharing (annual)',amount: 170_000 },
+] as const;
+
+export const SEM1_PAYMENTS = [
+  { id: 'G44989', amount: 50_000,   date: '2026-04-18' },
+  { id: 'G44990', amount: 100_000,  date: '2026-04-18' },
+  { id: 'G69500', amount: 257_500,  date: '2026-06-24' },
+] as const;
+
+// ── FEE ROADMAP ───────────────────────────────────────────────────────
+export const FEE_MILESTONES: FeeMilestone[] = [
   {
-    id:          'sem2',
-    label:       'Sem 2 AY2026-27',
-    semester:    2,
-    year:        1,
-    dueDate:     '2027-01-01',
-    total:       1_61_000,
-    breakdown: {
-      tuition:      1_90_000,
-      scholarship: -38_000,
-      examination:  6_000,
-      coCurricular: 3_000,
-    },
-    hostelIncluded: false,
+    id: 'sem1', label: 'Sem 1 AY2026-27',
+    amount: SEM1_TOTAL, status: 'paid',
+    dueDateLabel: '24 Jun 2026', dueDate: '2026-06-24',
   },
   {
-    id:          'year2',
-    label:       'Year 2 AY2027-28',
-    semester:    '3-4',
-    year:        2,
-    dueDate:     '2027-08-01',
-    total:       5_75_000,
-    breakdown: {
-      tuition:      3_90_000,
-      examination:  12_000,
-      coCurricular: 3_000,
-      hostel:       1_70_000,
-    },
-    hostelIncluded: true,
+    id: 'sem2', label: 'Sem 2 AY2026-27',
+    amount: 161_000, status: 'upcoming',
+    dueDateLabel: '~Jan 2027', dueDate: '2027-01-15',
   },
   {
-    id:          'year3',
-    label:       'Year 3 AY2028-29',
-    semester:    '5-6',
-    year:        3,
-    dueDate:     '2028-08-01',
-    total:       5_85_000,
-    breakdown: {
-      tuition:      4_00_000,
-      examination:  12_000,
-      coCurricular: 3_000,
-      hostel:       1_70_000,
-    },
-    hostelIncluded: true,
+    id: 'year2', label: 'Year 2 AY2027-28',
+    amount: 575_000, status: 'upcoming',
+    dueDateLabel: '~Aug 2027', dueDate: '2027-08-01',
   },
   {
-    id:          'year4',
-    label:       'Year 4 AY2029-30',
-    semester:    '7-8',
-    year:        4,
-    dueDate:     '2029-08-01',
-    total:       5_85_000,
-    breakdown: {
-      tuition:      4_00_000,
-      examination:  12_000,
-      coCurricular: 3_000,
-      hostel:       1_70_000,
-    },
-    hostelIncluded: true,
+    id: 'year3', label: 'Year 3 AY2028-29',
+    amount: 585_000, status: 'upcoming',
+    dueDateLabel: '~Aug 2028', dueDate: '2028-08-01',
   },
-] as const
+  {
+    id: 'year4', label: 'Year 4 AY2029-30',
+    amount: 585_000, status: 'upcoming',
+    dueDateLabel: '~Aug 2029', dueDate: '2029-08-01',
+  },
+];
 
-export const TOTAL_REMAINING_FEES = 19_06_000
+// ── CERTIFICATIONS — COLLEGE PHASE (inside ₹39.80L) ──────────────────
+export const COLLEGE_CERTS: Certification[] = [
+  { id: 'az900',   code: 'AZ-900',     name: 'Microsoft Azure Fundamentals',              phaseLabel: 'Phase 0',  cost: 9_440,  category: 'DECORATION',    order: 1,  inBudget: true  },
+  { id: 'clfc02',  code: 'CLF-C02',    name: 'AWS Certified Cloud Practitioner',          phaseLabel: 'Sem 1',    cost: 9_800,  category: 'THRESHOLD',     order: 2,  inBudget: true  },
+  { id: 'secplus', code: 'Security+',  name: 'CompTIA Security+',                         phaseLabel: 'Sem 2',    cost: 54_656, category: 'THRESHOLD',     order: 3,  inBudget: true  },
+  { id: 'saac03',  code: 'SAA-C03',    name: 'AWS Certified Solutions Architect – Assoc.', phaseLabel: 'Sem 3',   cost: 15_000, category: 'DIFFERENTIATOR',order: 4,  inBudget: true  },
+  { id: 'az500',   code: 'AZ-500',     name: 'Microsoft Azure Security Engineer',         phaseLabel: 'Sem 4',    cost: 15_100, category: 'DIFFERENTIATOR',order: 5,  inBudget: true  },
+  { id: 'gcpace',  code: 'GCP ACE',    name: 'Google Associate Cloud Engineer',           phaseLabel: 'Sem 5',    cost: 13_215, category: 'DIFFERENTIATOR',order: 6,  inBudget: true  },
+  { id: 'scsc03',  code: 'SCS-C03',    name: 'AWS Certified Security – Specialty',        phaseLabel: 'Sem 5',    cost: 28_318, category: 'THRESHOLD',     order: 7,  inBudget: true  },
+  { id: 'cka',     code: 'CKA',        name: 'Certified Kubernetes Administrator',        phaseLabel: 'Sem 5-6',  cost: 50_000, category: 'PREREQUISITE',  order: 8,  inBudget: true  },
+  { id: 'cks',     code: 'CKS',        name: 'Certified Kubernetes Security Specialist',  phaseLabel: 'Sem 6',    cost: 60_885, category: 'DIFFERENTIATOR',order: 9,  inBudget: true  },
+];
 
-// ═══════════════════════════════════════════════════════════════
-// CERTIFICATION ROADMAP — COLLEGE PHASE (inside ₹39.80L)
-// ═══════════════════════════════════════════════════════════════
-export type CertTier = 'DECORATION' | 'THRESHOLD' | 'DIFFERENTIATOR' | 'PREREQUISITE'
-export type CertPhase = 'COLLEGE' | 'BRIDGE' | 'POST'
+export const COLLEGE_CERTS_TOTAL = COLLEGE_CERTS.reduce((sum, c) => sum + c.cost, 0); // ₹2,56,414
 
-export interface Certification {
-  id:       number
-  code:     string
-  name:     string
-  phase:    CertPhase
-  semester: string
-  cost:     number
-  tier:     CertTier
-  inBudget: boolean   // true = counted in ₹39.80L
-}
+export const YEAR3_CERT_SPIKE_IDS   = ['gcpace', 'scsc03', 'cka', 'cks'] as const;
+export const YEAR3_CERT_SPIKE_TOTAL = COLLEGE_CERTS
+  .filter((c) => (YEAR3_CERT_SPIKE_IDS as readonly string[]).includes(c.id))
+  .reduce((sum, c) => sum + c.cost, 0); // ₹1,52,418
 
-export const CERTIFICATIONS: Certification[] = [
-  // College Phase — inside ₹39.80L
-  { id: 1,  code: 'AZ-900',       name: 'Azure Fundamentals',             phase: 'COLLEGE', semester: 'Phase 0', cost: 9_440,   tier: 'DECORATION',    inBudget: true },
-  { id: 2,  code: 'CLF-C02',      name: 'AWS Cloud Practitioner',         phase: 'COLLEGE', semester: 'Sem 1',   cost: 9_800,   tier: 'THRESHOLD',     inBudget: true },
-  { id: 3,  code: 'Security+',    name: 'CompTIA Security+',              phase: 'COLLEGE', semester: 'Sem 2',   cost: 54_656,  tier: 'THRESHOLD',     inBudget: true },
-  { id: 4,  code: 'SAA-C03',      name: 'AWS Solutions Architect Assoc.', phase: 'COLLEGE', semester: 'Sem 3',   cost: 15_000,  tier: 'DIFFERENTIATOR',inBudget: true },
-  { id: 5,  code: 'AZ-500',       name: 'Azure Security Engineer',        phase: 'COLLEGE', semester: 'Sem 4',   cost: 15_100,  tier: 'DIFFERENTIATOR',inBudget: true },
-  { id: 6,  code: 'GCP-ACE',      name: 'GCP Associate Cloud Engineer',   phase: 'COLLEGE', semester: 'Sem 5',   cost: 13_215,  tier: 'DIFFERENTIATOR',inBudget: true },
-  { id: 7,  code: 'SCS-C03',      name: 'AWS Security Specialty',         phase: 'COLLEGE', semester: 'Sem 5',   cost: 28_318,  tier: 'THRESHOLD',     inBudget: true },
-  { id: 8,  code: 'CKA',          name: 'Certified Kubernetes Admin',     phase: 'COLLEGE', semester: 'Sem 5-6', cost: 50_000,  tier: 'PREREQUISITE',  inBudget: true },
-  { id: 9,  code: 'CKS',          name: 'Certified Kubernetes Security',  phase: 'COLLEGE', semester: 'Sem 6',   cost: 60_885,  tier: 'DIFFERENTIATOR',inBudget: true },
-  // Bridge Phase — NOT in ₹39.80L (salary-funded)
-  { id: 10, code: 'CCSP',         name: 'Certified Cloud Security Prof.', phase: 'BRIDGE', semester: 'Bridge Yr1', cost: 60_000,  tier: 'THRESHOLD',    inBudget: false },
-  { id: 11, code: 'ISO-27001-LI', name: 'ISO 27001 Lead Implementer',    phase: 'BRIDGE', semester: 'Bridge Yr2', cost: 32_000,  tier: 'THRESHOLD',    inBudget: false },
-  { id: 12, code: 'GCP-PCSE',     name: 'GCP Professional Cloud Sec.',   phase: 'BRIDGE', semester: 'Bridge Yr2', cost: 20_000,  tier: 'DIFFERENTIATOR',inBudget: false },
-  // Post — NOT in ₹39.80L, requires 5yr experience
-  { id: 13, code: 'CISSP',        name: 'CISSP',                          phase: 'POST',   semester: 'Post-2035',  cost: 1_50_000, tier: 'DECORATION',  inBudget: false },
-]
+// ── CERTIFICATIONS — BRIDGE PHASE (post-grad, salary-funded, NOT in ₹39.80L) ──
+export const BRIDGE_CERTS: Certification[] = [
+  { id: 'ccsp',      code: 'CCSP',        name: 'Certified Cloud Security Professional',          phaseLabel: 'Bridge Yr 1', cost: 60_000,  category: 'THRESHOLD',     order: 10, inBudget: false },
+  { id: 'iso27001li',code: 'ISO 27001 LI',name: 'ISO 27001 Lead Implementer',                    phaseLabel: 'Bridge Yr 2', cost: 32_000,  category: 'THRESHOLD',     order: 11, inBudget: false },
+  { id: 'gcppcse',   code: 'GCP PCSE',    name: 'Google Professional Cloud Security Engineer',   phaseLabel: 'Bridge Yr 2', cost: 20_000,  category: 'DIFFERENTIATOR',order: 12, inBudget: false },
+  { id: 'cissp',     code: 'CISSP',       name: 'CISSP',                                         phaseLabel: 'Post-2035',   cost: 150_000, category: 'DECORATION',    order: 13, inBudget: false },
+];
 
-export const COLLEGE_CERTS_TOTAL  = 2_56_414
-export const YEAR3_CERT_SPIKE     = 1_52_418  // GCP-ACE + SCS-C03 + CKA + CKS
+export const ALL_CERTS: Certification[] = [...COLLEGE_CERTS, ...BRIDGE_CERTS];
 
-// ═══════════════════════════════════════════════════════════════
-// PRACTICE PLATFORMS (inside ₹39.80L)
-// ═══════════════════════════════════════════════════════════════
-export const PLATFORMS = {
-  hackTheBox:    { annual: 50_000, years: 4, total: 2_00_000 },
-  tryHackMe:     { annual: 4_800,  years: 4, total: 19_200  },
-  udemyCoursera: { oneTime: 10_000,           total: 10_000  },
-  grandTotal:    2_29_200,
-} as const
+// ── PRACTICE PLATFORMS (inside ₹39.80L) ──────────────────────────────
+export const PRACTICE_PLATFORMS = {
+  htb:           { name: 'Hack The Box',      perYear: 50_000, years: 4, total: 200_000 },
+  thm:           { name: 'TryHackMe',         perYear: 4_800,  years: 4, total: 19_200  },
+  udemyCoursera: { name: 'Udemy + Coursera',  total: 10_000 },
+} as const;
 
-// ═══════════════════════════════════════════════════════════════
-// BOOKS & SETUP (inside ₹39.80L)
-// ═══════════════════════════════════════════════════════════════
-export const BOOKS_AND_SETUP = {
-  books:    7_000,   // Linux, Docker, K8s, Threat Modeling
-  setup:    22_500,  // One-time Year 1 setup
-  total:    29_500,
-} as const
+// ── CYBER BUDGET — NAMED BLOCK (inside ₹39.80L) ──────────────────────
+export const CYBER_BUDGET = {
+  collegeCerts:  COLLEGE_CERTS_TOTAL,
+  htb:           PRACTICE_PLATFORMS.htb.total,
+  thm:           PRACTICE_PLATFORMS.thm.total,
+  udemyCoursera: PRACTICE_PLATFORMS.udemyCoursera.total,
+  total:         COLLEGE_CERTS_TOTAL
+                   + PRACTICE_PLATFORMS.htb.total
+                   + PRACTICE_PLATFORMS.thm.total
+                   + PRACTICE_PLATFORMS.udemyCoursera.total,
+} as const; // ₹4,85,614
 
-// ═══════════════════════════════════════════════════════════════
-// FULL BUDGET PROJECTION SUMMARY
-// ═══════════════════════════════════════════════════════════════
-export const BUDGET_SUMMARY = {
-  totalBudget:      39_80_000,
-  sem1Paid:          4_07_500,
-  remainingFees:    19_06_000,
-  monthlyTotal:      2_88_000,
-  cyberBudgetTotal:  4_85_614,  // Certs + HTB + THM + Udemy
-  booksSetup:          29_500,
-  totalCommitted:   31_16_614,
-  headroom:          8_63_386,  // Contingency / cloud credits / misc
-} as const
+// ── BOOKS & SETUP (inside ₹39.80L) ───────────────────────────────────
+export const BOOKS_SETUP_TOTAL = 29_500;
 
-export const SECURITY_DEPOSIT = 30_000  // Refundable May 2030
+// ── FULL BUDGET PROJECTION ────────────────────────────────────────────
+export const TOTAL_COMMITTED =
+  SEM1_TOTAL + TOTAL_REMAINING_FEES + MONTHLY_TOTAL + CYBER_BUDGET.total + BOOKS_SETUP_TOTAL;
+  // 407500 + 1906000 + 288000 + 485614 + 29500 = ₹31,16,614
+
+export const BUDGET_HEADROOM = BUDGET_CEILING - TOTAL_COMMITTED; // ₹8,63,386
+
+// ── EXPENSE CATEGORIES ────────────────────────────────────────────────
+export const EXPENSE_CATEGORIES: Record<ExpenseCategory, { label: string; color: string }> = {
+  food:          { label: 'Food',             color: '#39FF14' },
+  transport:     { label: 'Transport',        color: '#00F0FF' },
+  subscriptions: { label: 'Subscriptions',   color: '#BF5AF2' },
+  hostel:        { label: 'Hostel Extras',   color: '#FFB800' },
+  social:        { label: 'Social',          color: '#FF3B5C' },
+  study:         { label: 'Study Materials', color: '#5AA9F2' },
+  misc:          { label: 'Misc',            color: '#4A5568' },
+};
+
+// ── MISSION TIMELINE ──────────────────────────────────────────────────
+export const MISSION_START_DATE = '2026-08-01';
+export const GRADUATION_DATE    = '2030-05-31';
+
+export const MISSION_PHASES: MissionPhase[] = [
+  { id: 0, code: 'PHASE 0', name: 'IGNITION',        rangeLabel: 'Pre-College Prep',   startDate: '2026-01-01', endDate: '2026-07-31' },
+  { id: 1, code: 'PHASE 1', name: 'FOUNDATION',      rangeLabel: 'Year 1 · Sem 1–2',  startDate: '2026-08-01', endDate: '2027-07-31' },
+  { id: 2, code: 'PHASE 2', name: 'EXPANSION',       rangeLabel: 'Year 2 · Sem 3–4',  startDate: '2027-08-01', endDate: '2028-07-31' },
+  { id: 3, code: 'PHASE 3', name: 'SPECIALIZATION',  rangeLabel: 'Year 3 · Sem 5–6',  startDate: '2028-08-01', endDate: '2029-07-31' },
+  { id: 4, code: 'PHASE 4', name: 'DEPLOYMENT',      rangeLabel: 'Year 4 · Sem 7–8',  startDate: '2029-08-01', endDate: '2030-05-31' },
+];
+
+// ── THEME HEX (for Recharts/canvas — mirrors CSS vars) ────────────────
+export const THEME_HEX = {
+  bgBase:      '#07070F',
+  bgSurface:   '#0D0D1A',
+  neon:        '#39FF14',
+  cyan:        '#00F0FF',
+  purple:      '#BF5AF2',
+  amber:       '#FFB800',
+  red:         '#FF3B5C',
+  textPrimary: '#E8EAF0',
+  textMuted:   '#4A5568',
+  textDim:     '#2D3748',
+} as const;
